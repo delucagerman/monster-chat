@@ -5,19 +5,33 @@
         <v-toolbar-title class="monster-font">Monster Chat</v-toolbar-title>
       </div>
       <v-spacer></v-spacer>
-      <v-layout v-if="usuario">
-        <v-avatar>
+      <v-layout v-if="usuario" align-center justify-end>
+        <v-avatar color="white">
           <v-img :src="usuario.foto"></v-img>
         </v-avatar>
-        <span>{{ usuario.nombre }}</span>
+        <span class="ml-3 monster-font">{{ usuario.nombre }}</span>
+        <v-btn class="monster-font" text small @click="usuario = null">Salir</v-btn>
       </v-layout>
     </v-app-bar>
 
-    <v-content>
+    <v-main>
       <v-container fluid fill-height>
-        <Login @onIngresar="ingresar" />
+        <Login v-if="!usuario" @onNotificacion="mostrarNotificacion" @onIngresar="ingresar" />
+        <chat v-else />
       </v-container>
-    </v-content>
+    </v-main>
+
+    <v-snackbar
+      v-model="notificacion.visible"
+      :color="notificacion.color"
+      multi-line
+      top
+      :timeout="6000"
+      dark
+    >
+      <span>{{ notificacion.mensaje }}</span>
+      <v-btn class="ml-3" color="white" text @click="notificacion.visible = false">Cerrar</v-btn>
+    </v-snackbar>
 
     <v-footer color="primary" dark>
       <v-layout justify-center>
@@ -32,21 +46,33 @@
 
 <script>
 import Login from "./components/Login";
+import Chat from "./components/Chat";
 
 export default {
   name: "App",
 
   components: {
-    Login
+    Login,
+    Chat
   },
 
   data: () => ({
     //
-    usuario: null
+    usuario: null,
+    notificacion: {
+      mensaje: "",
+      color: "info",
+      visible: false
+    }
   }),
   methods: {
     ingresar(usuario) {
       this.usuario = usuario;
+    },
+    mostrarNotificacion(notificacion) {
+      this.notificacion.mensaje = notificacion.mensaje;
+      this.notificacion.color = notificacion.color;
+      this.notificacion.visible = true;
     }
   }
 };

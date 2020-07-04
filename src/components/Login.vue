@@ -31,6 +31,16 @@ export default {
   },
   methods: {
     async ingresar() {
+      if (!this.email) {
+        this.enviarNotificacion("Debes indicar un email", "warning");
+        return;
+      }
+
+      if (!this.password) {
+        this.enviarNotificacion("Debes indicar un password", "warning");
+        return;
+      }
+
       try {
         await auth.signInWithEmailAndPassword(this.email, this.password);
 
@@ -45,11 +55,33 @@ export default {
           if (doc.exists) {
             let usuario = doc.data();
             this.$emit("onIngresar", usuario);
+          } else {
+            this.enviarNotificacion(
+              "No se encontro la informacion del usuario",
+              "error"
+            );
           }
         }
       } catch (error) {
-        console.log(error);
+        switch (error.code) {
+          case "auth/user-not-found":
+          case "auth/wrong-password":
+            this.enviarNotificacion(
+              "Usuario no valido. Revisa tu correo y contraseña",
+              "warning"
+            );
+            break;
+          default:
+            this.enviarNotificacion(
+              "Ocurrio un error verificando la informacion",
+              "error"
+            );
+            break;
+        }
       }
+    },
+    enviarNotificacion(mensaje, color) {
+      this.$emit("onNotificacion", { mensaje, color });
     }
   }
 };
